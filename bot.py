@@ -1,9 +1,23 @@
 import os
 import logging
 import requests
+import telegram
 from dotenv import load_dotenv  # Load environment variables from .env file
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    update = telegram.Update.de_json(request.get_json(force=True), bot)
+    chat_id = update.message.chat_id
+    text = update.message.text
+    bot.send_message(chat_id=chat_id, text=f"You said: {text}")
+    return "OK"
+
 
 # Load environment variables
 load_dotenv()
@@ -11,6 +25,7 @@ load_dotenv()
 # Set your bot token and Together AI API key
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TOGETHER_API_KEY = os.getenv("TOGETHER_AI_API_KEY")
+bot = telegram.Bot(token=TOKEN)
 
 # Together AI base URL
 TOGETHER_API_URL = "https://api.together.xyz/v1/chat/completions"
@@ -67,3 +82,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    app.run()
